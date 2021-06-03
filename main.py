@@ -130,7 +130,6 @@ def generate_enemy_ships():
 
         if horizont_vertical == 1:
             try:
-                check_near_ships = 0
                 check_near_ships = enemy_ships[coord_x - 1][coord_y - 1] + \
                                    enemy_ships[coord_x][coord_y - 1] + \
                                    enemy_ships[coord_x + 1][coord_y - 1] + \
@@ -148,7 +147,7 @@ def generate_enemy_ships():
                         enemy_ships[coord_x][coord_y + j] = 1
 
                     ships_list.remove(length)
-                    print(ships_list)
+                    #print(ships_list)
                     sum_len_enemy_ships += length
 
             except Exception:
@@ -174,69 +173,13 @@ def generate_enemy_ships():
                         enemy_ships[coord_x+i][coord_y] = 1
 
                     ships_list.remove(length)
-                    print(ships_list)
+                    #print(ships_list)
                     sum_len_enemy_ships += length
 
             except Exception:
                 pass
 
-
-
-
-
-        # # print(horizont_vertical, primerno_x,primerno_y)
-        # if horizont_vertical == 1:
-        #     if primerno_x + length <= x:
-        #         for j in range(0, length):
-        #             try:
-        #                 check_near_ships = 0
-        #                 check_near_ships = enemy_ships[primerno_y][primerno_x - 1] + \
-        #                                    enemy_ships[primerno_y][primerno_x + j] + \
-        #                                    enemy_ships[primerno_y][primerno_x + j + 1] + \
-        #                                    enemy_ships[primerno_y][primerno_x + j - 1] + \
-        #                                    enemy_ships[primerno_y + 1][primerno_x + j + 1] + \
-        #                                    enemy_ships[primerno_y - 1][primerno_x + j + 1] + \
-        #                                    enemy_ships[primerno_y + 1][primerno_x + j] + \
-        #                                    enemy_ships[primerno_y - 1][primerno_x + j]
-        #                 # print(check_near_ships)
-        #                 if check_near_ships == 0:  # записываем в том случае, если нет ничего рядом
-        #                     enemy_ships[primerno_y][primerno_x + j] = 1 # записываем номер корабля
-        #                     ships_list.remove(length)
-        #                     print(ships_list)
-        #                     sum_len_enemy_ships += length
-        #             except Exception:
-        #                 pass
-        #
-        # if horizont_vertical == 2:
-        #     if primerno_y + length <= y:
-        #         for j in range(0, length):
-        #             try:
-        #                 check_near_ships = 0
-        #                 check_near_ships = enemy_ships[primerno_y - 1][primerno_x] + \
-        #                                    enemy_ships[primerno_y + j][primerno_x] + \
-        #                                    enemy_ships[primerno_y + j + 1][primerno_x] + \
-        #                                    enemy_ships[primerno_y + j + 1][primerno_x + 1] + \
-        #                                    enemy_ships[primerno_y + j + 1][primerno_x - 1] + \
-        #                                    enemy_ships[primerno_y + j][primerno_x + 1] + \
-        #                                    enemy_ships[primerno_y + j][primerno_x - 1]
-        #                 # print(check_near_ships)
-        #                 if check_near_ships == 0:  # записываем в том случае, если нет ничего рядом
-        #                     enemy_ships[primerno_y + j][primerno_x] = 1  # записываем номер корабля
-        #                     ships_list.remove(length)
-        #                     print(ships_list)
-        #                     sum_len_enemy_ships += length
-        #             except Exception:
-        #                 pass
-
-        # делаем подсчет 1ц
-        #sum_len_enemy_ships = 0
-        #for i in range(0, x):
-        #    for j in range(0, y):
-        #        if enemy_ships[j][i] > 0:
-        #            sum_len_enemy_ships = sum_len_enemy_ships + 1
-
     print(sum_len_enemy_ships)
-    # print(ships_list)
     print(enemy_ships)
 
 generate_enemy_ships()
