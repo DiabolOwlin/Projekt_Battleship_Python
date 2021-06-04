@@ -13,7 +13,8 @@ x = y = 10
 step_x = size_canvas_x // x
 step_y = size_canvas_y // y
 
-menu_x = step_x * 4  # 200
+delta_menu_x = 4
+menu_x = step_x * delta_menu_x  # 200
 menu_y = 40
 
 ships = 10
@@ -23,17 +24,18 @@ ship_len3 = 3
 ship_len4 = 4
 sum_shot_down_player1_ships = 0
 sum_shot_down_player2_ships = 0
-list_ids = [] # список объектов canvas
+list_ids = []  # список объектов canvas
 
-#sum_len_player1_ships = 0
-#sum_len_player2_ships = 0
+# sum_len_player1_ships = 0
+# sum_len_player2_ships = 0
 
 player1_ships = np.array([[0 for i in range(x)] for j in range(y)])
 player2_ships = np.array([[0 for i in range(x)] for j in range(y)])
 
-
 already_clicked_player1 = np.array([[-1 for i in range(x)] for j in range(y)])
 already_clicked_player2 = np.array([[-1 for i in range(x)] for j in range(y)])
+
+player1_turn = random.choice([True, False])
 
 
 def on_closing():
@@ -73,8 +75,19 @@ t0.place(x=size_canvas_x // 2 - t0.winfo_reqwidth() // 2, y=size_canvas_y + 3)
 t1 = Label(window, text="Player 2", font=("Comic Sans", 16))
 t1.place(x=size_canvas_x + menu_x + size_canvas_x // 2 - t1.winfo_reqwidth() // 2, y=size_canvas_y + 3)
 
-t0.configure(bg="red")
-t0.configure(bg="#f0f0f0")
+# t0.configure(bg="red")
+# t0.configure(bg="#f0f0f0")
+
+def turn(player1_turn):
+    if player1_turn:
+        t1.configure(bg="red")
+        t0.configure(bg="#f0f0f0")
+    else:
+        t0.configure(bg="red")
+        t1.configure(bg="#f0f0f0")
+
+
+turn(player1_turn)
 
 
 # coord_x = Label(text="A  B  C  D  E  F  G  H  I  J", font=("Arial", 13))
@@ -90,7 +103,8 @@ def button_show_player_ships(player_ships, offset_x=0):
     for i in range(0, x):
         for j in range(0, y):
             if player_ships[j][i] > 0:
-                _id = canvas.create_rectangle(offset_x + i * step_x, j * step_y, offset_x + i * step_x + step_x, j * step_y + step_y,
+                _id = canvas.create_rectangle(offset_x + i * step_x, j * step_y, offset_x + i * step_x + step_x,
+                                              j * step_y + step_y,
                                               fill="blue")
                 list_ids.append(_id)
 
@@ -100,60 +114,67 @@ def button_play_again():
     global already_clicked_player1, already_clicked_player2
     global player1_ships, player2_ships
     global sum_len_player1_ships, sum_len_player2_ships
-
+    global sum_shot_down_player1_ships, sum_shot_down_player2_ships
+    global player1_turn
     for element in list_ids:
         canvas.delete(element)
     list_ids = []
     already_clicked_player1 = np.array([[-1 for i in range(x)] for j in range(y)])
     already_clicked_player2 = np.array([[-1 for i in range(x)] for j in range(y)])
+    sum_shot_down_player1_ships = 0
+    sum_shot_down_player2_ships = 0
     player1_ships, sum_len_player1_ships = generate_player_ships()
     player2_ships, sum_len_player2_ships = generate_player_ships()
+    player1_turn = random.choice([True, False])
 
 
 b0 = Button(window, text="Show Player 1 ships", command=lambda: button_show_player_ships(player1_ships))
 b0.place(x=size_canvas_x + 20, y=30)
 
-b1 = Button(window, text="Show Player 2 ships", command=lambda: button_show_player_ships(player2_ships, size_canvas_x + menu_x))
+b1 = Button(window, text="Show Player 2 ships",
+            command=lambda: button_show_player_ships(player2_ships, size_canvas_x + menu_x))
 b1.place(x=size_canvas_x + 20, y=70)
 
 b2 = Button(window, text="Play again", command=button_play_again)
 b2.place(x=size_canvas_x + 20, y=110)
 
 
-def draw_point(x, y):
-    print(player1_ships[y][x])
-    if player1_ships[y][x] == 0:
-        id1 = canvas.create_oval(x * step_x, y * step_y,
-                                 x * step_x + step_x,
+def draw_point(player_ships, x, y, offset_x=0):
+    # print(player1_ships[y][x])
+    if player_ships[y][x] == 0:
+        id1 = canvas.create_oval(offset_x + x * step_x, y * step_y,
+                                 offset_x + x * step_x + step_x,
                                  y * step_y + step_y,
                                  fill="white")
-        id2 = canvas.create_oval(x * step_x + step_x // 3, y * step_y + step_y // 3,
-                                 x * step_x + step_x - step_x // 3,
+        id2 = canvas.create_oval(offset_x + x * step_x + step_x // 3, y * step_y + step_y // 3,
+                                 offset_x + x * step_x + step_x - step_x // 3,
                                  y * step_y + step_y - step_y // 3,
                                  fill="white")
-        id3 = canvas.create_oval(x * step_x + step_x // 3, y * step_y + step_y // 3,
-                                 x * step_x + step_x - step_x // 3,
+        id3 = canvas.create_oval(offset_x + x * step_x + step_x // 3, y * step_y + step_y // 3,
+                                 offset_x + x * step_x + step_x - step_x // 3,
                                  y * step_y + step_y - step_y // 3,
                                  fill="white")
         list_ids.append(id1)
         list_ids.append(id2)
         list_ids.append(id3)
     else:
-        id4 = canvas.create_rectangle(x * step_x, y * step_y,
-                                      x * step_x + step_x, y * step_y + step_y,
+        id4 = canvas.create_rectangle(offset_x + x * step_x, y * step_y,
+                                      offset_x + x * step_x + step_x, y * step_y + step_y,
                                       fill="red")
         list_ids.append(id4)
 
 
-def check_winner():
+def check_winner(sum_shot_down_player_ships, sum_len_player_ships):
     win = False
-    if sum_shot_down_player1_ships == sum_len_player1_ships:
+    if sum_shot_down_player_ships == sum_len_player_ships:
         win = True
     return win
 
 
 def add_to_all(event):
-    global sum_shot_down_player1_ships
+    global sum_shot_down_player1_ships, sum_shot_down_player2_ships
+    global already_clicked_player1, already_clicked_player2
+    global player1_turn
     _type = 0  # ЛКМ
     if event.num == 3:
         _type = 1  # ПКМ
@@ -173,16 +194,73 @@ def add_to_all(event):
 
     print(f"Coordinates: {game_coord_x}:{game_coord_y}, click type: {_type}")
 
-    if 0 <= game_coord_x < x and 0 <= game_coord_y < y:
+    if 0 <= game_coord_x < x and 0 <= game_coord_y < y and player1_turn:
         if already_clicked_player1[game_coord_y][game_coord_x] == -1:
+            player1_turn = not player1_turn
+
             if player1_ships[game_coord_y][game_coord_x] > 0:
                 sum_shot_down_player1_ships += 1
-            already_clicked_player1[game_coord_y][game_coord_x] = _type
-            draw_point(game_coord_x, game_coord_y)
+                player1_turn = not player1_turn
+            else:
+                turn(player1_turn)
 
-            if check_winner():
-                print("Win!")
-        print(len(list_ids))
+            already_clicked_player1[game_coord_y][game_coord_x] = _type
+            draw_point(player1_ships, game_coord_x, game_coord_y)
+
+            if check_winner(sum_shot_down_player1_ships, sum_len_player1_ships):
+                winner = "Player 2 wins!"
+                winner_add = "The entire Player 1 fleet was sunk..."
+                print(winner, winner_add)
+
+                already_clicked_player1 = np.array([[10 for i in range(x)] for j in range(y)])
+                already_clicked_player2 = np.array([[10 for i in range(x)] for j in range(y)])
+
+                id5 = canvas.create_rectangle(step_x * 3, step_y * 3,
+                                              size_canvas_x + menu_x + size_canvas_x - step_x * 3,
+                                              size_canvas_y - step_y, fill="yellow")
+                list_ids.append(id5)
+                id6 = canvas.create_rectangle(step_x * 3 + step_x // 2, step_y * 3 + step_y // 2,
+                                              size_canvas_x + menu_x + size_canvas_x - step_x * 3 - step_x // 2,
+                                              size_canvas_y - step_y - step_y // 2, fill="white")
+                list_ids.append(id6)
+                id7 = canvas.create_text(step_x * 12, step_y * 5, text=winner, font=("Arial", 50), justify=CENTER)
+                id8 = canvas.create_text(step_x * 12, step_y * 7, text=winner_add, font=("Arial", 25), justify=CENTER)
+                list_ids.append(id7)
+                list_ids.append(id8)
+
+    if x + delta_menu_x <= game_coord_x < x + x + delta_menu_x and 0 <= game_coord_y < y and not player1_turn:
+        if already_clicked_player2[game_coord_y][game_coord_x - x - delta_menu_x] == -1:
+            player1_turn = not player1_turn
+
+            if player2_ships[game_coord_y][game_coord_x - x - delta_menu_x] > 0:
+                player1_turn = not player1_turn
+                sum_shot_down_player2_ships += 1
+            else:
+                turn(player1_turn)
+
+            already_clicked_player2[game_coord_y][game_coord_x - x - delta_menu_x] = _type
+            draw_point(player2_ships, game_coord_x - x - delta_menu_x, game_coord_y, size_canvas_x + menu_x)
+
+            if check_winner(sum_shot_down_player2_ships, sum_len_player2_ships):
+                winner = "Player 1 wins!"
+                winner_add = "The entire Player 2 fleet was sunk..."
+                print(winner, winner_add)
+
+                already_clicked_player1 = np.array([[-1 for i in range(x)] for j in range(y)])
+                already_clicked_player2 = np.array([[-1 for i in range(x)] for j in range(y)])
+
+                id5 = canvas.create_rectangle(step_x * 3, step_y * 3,
+                                              size_canvas_x + menu_x + size_canvas_x - step_x * 3,
+                                              size_canvas_y - step_y, fill="yellow")
+                list_ids.append(id5)
+                id6 = canvas.create_rectangle(step_x * 3 + step_x // 2, step_y * 3 + step_y // 2,
+                                              size_canvas_x + menu_x + size_canvas_x - step_x * 3 - step_x // 2,
+                                              size_canvas_y - step_y - step_y // 2, fill="white")
+                list_ids.append(id6)
+                id7 = canvas.create_text(step_x * 12, step_y * 5, text=winner, font=("Arial", 50), justify=CENTER)
+                id8 = canvas.create_text(step_x * 12, step_y * 7, text=winner_add, font=("Arial", 25), justify=CENTER)
+                list_ids.append(id7)
+                list_ids.append(id8)
 
 
 canvas.bind_all("<Button-1>", add_to_all)  # LKM
@@ -190,7 +268,6 @@ canvas.bind_all("<Button-3>", add_to_all)  # PKM
 
 
 def generate_player_ships():
-
     ships_list = [4, 3, 3, 2, 2, 2, 1, 1, 1, 1]
     sum_len_all_ships = sum(ships_list)
     player_ships = np.array([[0 for i in range(x)] for j in range(y)])
