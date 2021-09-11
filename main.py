@@ -3,6 +3,7 @@ from tkinter import messagebox
 import numpy as np
 import time
 import random
+import game_functions as game_func
 
 window = Tk()
 app_running = True
@@ -38,7 +39,8 @@ add_to_label = ""
 computer = False                                                     # a variable to determine who we`re playing against
 
 
-def on_closing():                                                                   # a function which destroy our "window" if we want to close it
+def on_closing():
+    ''' a function which destroy our "window" if we want to close it with additional warning window '''
     global app_running
     if messagebox.askokcancel("Exit the game", "Do you want to exit?"):
         app_running = False
@@ -48,7 +50,6 @@ def on_closing():                                                               
 window.protocol("WM_DELETE_WINDOW", on_closing)
 window.title("Battleships")
 window.resizable(0, 0)                                      # restrictable size of the our app
-#window.wm_attributes("-topmost", 1)
 canvas = Canvas(window, width=size_canvas_x + menu_x + size_canvas_x, height=size_canvas_y + menu_y, bd=0,
                 highlightthickness=0)
 
@@ -59,7 +60,8 @@ canvas.pack()
 window.update()
 
 
-def draw_board(offset_x=0):                                                                     # a function that draws field 10x10 on our canvas
+def draw_board(offset_x=0):
+    ''' a function that draws field 10x10 on our canvas '''
     for i in range(0, x + 1):
         canvas.create_line(offset_x + step_x * i, 0, offset_x + step_x * i, size_canvas_y)
     for i in range(0, y + 1):
@@ -81,18 +83,8 @@ t2_result = Label(window, text="", font=("Comic Sans", 16))
 t2_result.place(x=size_canvas_x + 20 - t2_result.winfo_reqwidth() // 2, y=size_canvas_y - step_y * 3)   # label to show the result of player`s turn
 
 
-def mark_turn(player1_turn):                                            # marking the player which making a turn
-    if player1_turn:
-        t0.configure(bg="blue", fg="#f0f0f0")
-        t1.configure(bg="#f0f0f0", fg="red")
-        t3.configure(text="Player 1`s turn", fg="blue")
-    else:
-        t1.configure(bg="red", fg="#f0f0f0")
-        t0.configure(bg="#f0f0f0", fg="blue")
-        t3.configure(text="Player 2`s turn", fg="red")
-
-
-def button_show_player_ships(player_ships, already_clicked_player, offset_x=0, color="blue"):           # a function that shows player`s fleet deployment
+def button_show_player_ships(player_ships, already_clicked_player, offset_x=0, color="blue"):
+    ''' a function that shows player`s fleet deployment '''
     for i in range(0, x):
         for j in range(0, y):
             if player_ships[j][i] > 0:
@@ -105,7 +97,8 @@ def button_show_player_ships(player_ships, already_clicked_player, offset_x=0, c
                     list_ids.append(_id)                                                    # adding a shape to the list that will be used to clean up the canvas
 
 
-def button_reset(comp):                                                                 # a function for button "Reset" that cleans up the canvas or restarting the game
+def button_reset(comp):
+    ''' a function for button "Reset" that cleans up the canvas or restarting the game '''
     global player1_ships, player2_ships
     global list_ids, computer, add_to_label, list_deploying
     global already_clicked_player1, already_clicked_player2
@@ -158,6 +151,7 @@ def button_reset(comp):                                                         
 
 
 def button_start():
+    ''' a function for button "Start" which starts a game when all is settled up '''
     global player1_ships, player2_ships
     global already_clicked_player1, already_clicked_player2
     global sum_len_player1_ships, sum_len_player2_ships
@@ -169,7 +163,7 @@ def button_start():
     already_clicked_player2 = np.array([[-1 for i in range(x + 1)] for j in range(y + 1)])
 
     if computer:
-        player2_ships, sum_len_player2_ships, list_gen_coordinates_player2 = generate_player_ships()            # if playing against computer, then generate all needed for player 2
+        player2_ships, sum_len_player2_ships, list_gen_coordinates_player2 = game_func.generate_player_ships(x, y)            # if playing against computer, then generate all needed for player 2
         checksum = 0
         for i in range(x):                                              # checking if array with player 1`s ships
             for j in range(y):                                          # has all ships needed for game
@@ -275,7 +269,7 @@ def button_start():
         canvas.unbind_all("<Button-3>")                            # unbind RMB for manual ship deployment
 
         player1_turn = random.choice([True, False])                # randoming first turn
-        mark_turn(player1_turn)
+        game_func.mark_turn(player1_turn, t0, t1, t3)
 
         generate_fleet_button["state"] = DISABLED
         reset_button["state"] = ACTIVE
@@ -285,21 +279,22 @@ def button_start():
             computer_turn()
 
     else:
-        player1_ships, sum_len_player1_ships, list_gen_coordinates_player1 = generate_player_ships()        # if we`re playing against other player,
-        player2_ships, sum_len_player2_ships, list_gen_coordinates_player2 = generate_player_ships()        # all will generate automatically
+        player1_ships, sum_len_player1_ships, list_gen_coordinates_player1 = game_func.generate_player_ships(x, y)        # if we`re playing against other player,
+        player2_ships, sum_len_player2_ships, list_gen_coordinates_player2 = game_func.generate_player_ships(x, y)        # all will generate automatically
         player1_turn = random.choice([True, False])
-        mark_turn(player1_turn)
+        game_func.mark_turn(player1_turn, t0, t1, t3)
         generate_fleet_button["state"] = DISABLED
         reset_button["state"] = ACTIVE
         start_button["state"] = DISABLED
 
 
-def generate_random_fleet():                                         # a function to button "Generate random fleet"
+def generate_random_fleet():
+    ''' a function to button "Generate random fleet" which calls function generate_player_ships for player 1 in "player vs computer" mode'''
     global player1_ships, list_used
     global sum_len_player1_ships, list_gen_coordinates_player1
     button_reset(computer)
 
-    player1_ships, sum_len_player1_ships, list_gen_coordinates_player1 = generate_player_ships()
+    player1_ships, sum_len_player1_ships, list_gen_coordinates_player1 = game_func.generate_player_ships(x, y)
     list_used = np.array([1 for _ in range(10)])
     button_show_player_ships(player1_ships, already_clicked_player1)
 
@@ -342,7 +337,8 @@ for both players, and in up against the computer you will also be able to manual
 right-click on the desired cell. \n\nEnjoy! :)')
 
 
-def draw_point(player_ships, draw_x, draw_y, offset_x=0):                       # a function to draw a shape on canvas
+def draw_point(player_ships, draw_x, draw_y, offset_x=0):
+    ''' a function to draw a shape on canvas depending what is happened in game'''
 
     if computer:
         if np.array_equal(player_ships, player1_ships):
@@ -390,13 +386,6 @@ def draw_point(player_ships, draw_x, draw_y, offset_x=0):                       
                 list_ids.append(id2)
         else:
             pass
-
-
-def check_winner(sum_shot_down_player_ships, sum_len_player_ships):                     # a function to check if player are the winner or not
-    win = False
-    if sum_shot_down_player_ships == sum_len_player_ships:
-        win = True
-    return win
 
 
 def check_ship(player_ships, already_clicked_player, val):                          # a function to check if ship has been destroyed
@@ -510,12 +499,12 @@ def computer_turn():
     else:
         missed = "Computer missed!"
         t2_result.configure(text=missed, fg='red')
-        mark_turn(player1_turn)
+        game_func.mark_turn(player1_turn, t0, t1, t3)
 
     already_clicked_player1[game_coord_y][game_coord_x] = 5
     draw_point(player1_ships, game_coord_x, game_coord_y)
 
-    if check_winner(sum_shot_down_player1_ships, sum_len_player1_ships):
+    if game_func.check_winner(sum_shot_down_player1_ships, sum_len_player1_ships):
         winner = "Computer wins!"
         winner_add = "The entire Player 1 fleet was sunk..."
         print(winner, winner_add)
@@ -523,7 +512,7 @@ def computer_turn():
         already_clicked_player1 = np.array([[10 for i in range(x + 1)] for j in range(y + 1)])
         already_clicked_player2 = np.array([[10 for i in range(x + 1)] for j in range(y + 1)])
 
-        #reset_button["state"] = ACTIVE
+
 
         t2_result.destroy()
         t3.destroy()
@@ -613,12 +602,12 @@ def add_to_all(event):                                                          
             else:
                 missed = "     Missed..."
                 t2_result.configure(text=missed, fg='red')
-                mark_turn(player1_turn)
+                game_func.mark_turn(player1_turn, t0, t1, t3)
 
             already_clicked_player1[game_coord_y][game_coord_x] = _type
             draw_point(player1_ships, game_coord_x, game_coord_y)
 
-            if check_winner(sum_shot_down_player1_ships, sum_len_player1_ships):
+            if game_func.check_winner(sum_shot_down_player1_ships, sum_len_player1_ships):
                 winner = "Player 2 wins!"
                 winner_add = "The entire Player 1 fleet was sunk..."
                 print(winner, winner_add)
@@ -666,7 +655,7 @@ def add_to_all(event):                                                          
                 missed = "     Missed..."
                 t2_result.configure(text=missed, fg='blue')
 
-                mark_turn(player1_turn)
+                game_func.mark_turn(player1_turn, t0, t1, t3)
 
             already_clicked_player2[game_coord_y][game_coord_x - x - delta_menu_x] = _type
             draw_point(player2_ships, game_coord_x - x - delta_menu_x, game_coord_y, size_canvas_x + menu_x)
@@ -674,7 +663,7 @@ def add_to_all(event):                                                          
             if not player1_turn and computer:
                 computer_turn()
 
-            if check_winner(sum_shot_down_player2_ships, sum_len_player2_ships):
+            if game_func.check_winner(sum_shot_down_player2_ships, sum_len_player2_ships):
                 winner = "Player 1 wins!"
                 winner_add = "The entire Player 2 fleet was sunk..."
                 print(winner, winner_add)
@@ -701,94 +690,9 @@ def add_to_all(event):                                                          
 
 canvas.bind_all("<Button-1>", add_to_all)  # LMB
 
-
-def generate_player_ships():                                                        # a generator of player`s ships
-    ships_list = [4, 3, 3, 2, 2, 2, 1, 1, 1, 1]
-    sum_len_all_ships = sum(ships_list)
-    player_ships = np.array([[0 for i in range(x + 1)] for j in range(y + 1)])
-    list_gen_coordinates = []
-    sum_len_player_ships = 0
-    num = 1
-
-    while sum_len_player_ships != sum_len_all_ships:
-
-        length = ships_list[0]
-        horizont_vertical = random.randrange(1, 3)  # 1- горизонтальное 2 - вертикальное
-
-        coord_x = random.randrange(0, x)
-        coord_y = random.randrange(0, y)
-
-        if horizont_vertical == 1:
-            if coord_y + (length - 1) > y:
-                coord_y = coord_y - (length - 1)
-
-        else:
-            if coord_x + (length - 1) > x:
-                coord_x = coord_x - (length - 1)
-
-        if horizont_vertical == 1:
-            if coord_x + length <= x:
-                try:
-                    check_near_ships = 0
-                    check_near_ships = player_ships[coord_x - 1][coord_y - 1] + \
-                                       player_ships[coord_x][coord_y - 1] + \
-                                       player_ships[coord_x + 1][coord_y - 1] + \
-                                       player_ships[coord_x - 1][coord_y] + \
-                                       player_ships[coord_x][coord_y] + \
-                                       player_ships[coord_x + 1][coord_y]
-
-                    for j in range(length):
-                        check_near_ships += player_ships[coord_x - 1][coord_y + 1 + j] + \
-                                            player_ships[coord_x][coord_y + 1 + j] + \
-                                            player_ships[coord_x + 1][coord_y + 1 + j]
-
-                    if check_near_ships == 0:
-                        list_gen_coordinates.append((horizont_vertical, coord_x, coord_y))
-                        for j in range(length):
-                            player_ships[coord_x][coord_y + j] = num
-
-                        ships_list.remove(length)
-
-                        sum_len_player_ships += length
-                        num += 1
-
-                except Exception:
-                    pass
-
-        if horizont_vertical == 2:
-            if coord_y + length <= y:
-                try:
-                    check_near_ships = 0
-                    check_near_ships = player_ships[coord_x - 1][coord_y - 1] + \
-                                       player_ships[coord_x - 1][coord_y] + \
-                                       player_ships[coord_x - 1][coord_y + 1] + \
-                                       player_ships[coord_x][coord_y - 1] + \
-                                       player_ships[coord_x][coord_y] + \
-                                       player_ships[coord_x][coord_y + 1]
-
-                    for i in range(length):
-                        check_near_ships += player_ships[coord_x + 1 + i][coord_y - 1] + \
-                                            player_ships[coord_x + 1 + i][coord_y] + \
-                                            player_ships[coord_x + 1 + i][coord_y + 1]
-
-                    if check_near_ships == 0:
-                        list_gen_coordinates.append((horizont_vertical, coord_x, coord_y))
-                        for i in range(length):
-                            player_ships[coord_x + i][coord_y] = num
-
-                        ships_list.remove(length)
-
-                        sum_len_player_ships += length
-                        num += 1
-
-                except Exception:
-                    pass
-
-    return player_ships[0:-1, 0:-1], sum_len_player_ships, list_gen_coordinates
-
-
 while app_running:                                                                              # analog for mainloop()
     if app_running:
         window.update_idletasks()
         window.update()
+
     time.sleep(0.005)
